@@ -72,6 +72,7 @@ const currencies = new Map([
 ]);
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+const euroToUSD = 1.1;
 
 /////////////////////////////////////////////////
 
@@ -87,3 +88,137 @@ const displayMovements = function (movements) {
   });
 };
 displayMovements(account1.movements);
+
+// Calculate and display deposit
+const displaySummary = function (acc) {
+  const income = acc.movements
+    .filter((mov) => mov > 0)
+    .reduce(function (acc, mov) {
+      return acc + mov;
+    }, 0);
+  console.log(`deposit: ${income}`);
+  labelSumIn.textContent = `${income}`;
+  // Calculate and display withdrawal
+  const out = acc.movements
+    .filter((mov) => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+
+  labelSumOut.textContent = `${Math.abs(out)}`;
+  // Calculate and display interest
+  const interest = acc.movements
+    .filter((mov) => mov > 0)
+    .map((mov) => (mov * acc.interestRate) / 100)
+    .filter(function (dep) {
+      return dep > 1;
+    })
+    .reduce(function (acc, dep) {
+      return acc + dep;
+    }, 0);
+  labelSumInterest.textContent = `${interest}`;
+};
+
+//  User computing task
+
+const computingUser = function (accs) {
+  accs.forEach(function (acc) {
+    acc.userName = acc.owner
+      .toLowerCase()
+      .split(" ")
+      .map((newName) => newName[0])
+      .join("");
+  });
+};
+computingUser(accounts);
+console.log(accounts);
+
+// Calculate balance
+
+const calBalance = function (movements) {
+  const balance = movements.reduce(function (acc, mov, i, movements) {
+    return acc + mov;
+  }, 0);
+  labelBalance.textContent = `${balance} EUR`;
+};
+calBalance(account1.movements);
+
+// convert euro to USD
+const displayEuroToUSD = movements
+  .filter((mov) => mov > 0)
+  .map(function (mov) {
+    return mov * euroToUSD;
+  })
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(movements);
+console.log(displayEuroToUSD);
+
+let currentAccount;
+
+//Implementing login
+btnLogin.addEventListener("click", function (e) {
+  e.preventDefault();
+  currentAccount = accounts.find(
+    (acc) => acc.userName === inputLoginUsername.value
+  );
+  console.log(currentAccount);
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // Display UI and Welcome
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(" ")[0]
+    }`;
+    containerApp.style.opacity = 100;
+    // Display balance
+    calBalance(currentAccount.movements);
+    // Display movements
+    displayMovements(currentAccount.movements);
+    // Display Summary
+    displaySummary(currentAccount);
+  }
+});
+
+// mini coding challenges
+
+// --------Filter method
+
+// const filteredArray = movements.filter(function (mov) {
+//   return mov < 0;
+// });
+// console.log(filteredArray);
+
+// ----------Reduce method
+// const balance = movements.reduce(function (acc, mov, i, movements) {
+//   return acc + mov;
+// }, 0);
+// console.log(balance);
+// ----------- Reduce method using arrow function
+// const balance2 = movements.reduce((acc, mov, i, movements) => acc + mov, 0);
+// console.log(balance2);
+
+//----------------- Reduce method using for of loop
+
+// let sum = 0;
+// for (const mov of movements) sum += mov;
+// console.log(sum);
+
+//-------------Reduce method to find out max value
+// const max = movements.reduce(function (acc, mov) {
+//   if (acc > mov) {
+//     return acc;
+//   } else {
+//     return mov;
+//   }
+// }, 200);
+// console.log(max);
+
+//---------find method
+// const test = accounts.find((account1) => account1.owner === "Jessica");
+// console.log(test);
+// --------find method using for of loop
+// const newFunc = function (accounts) {
+//   for (const acc of accounts) {
+//     if (acc.owner === "Jessica Davis") {
+//       return acc;
+//     }
+//   }
+// };
+// const result = newFunc(accounts);
+// console.log(result);
