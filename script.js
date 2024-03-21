@@ -87,7 +87,7 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML("afterbegin", html);
   });
 };
-displayMovements(account1.movements);
+//displayMovements(account1.movements);
 
 // Calculate and display deposit
 const displaySummary = function (acc) {
@@ -133,13 +133,21 @@ console.log(accounts);
 
 // Calculate balance
 
-const calBalance = function (movements) {
-  const balance = movements.reduce(function (acc, mov, i, movements) {
-    return acc + mov;
-  }, 0);
-  labelBalance.textContent = `${balance} EUR`;
+const calBalance = function (account) {
+  // debugger;
+  account.balance = account.movements.reduce((acc, mov) => acc + mov, 0);
+
+  labelBalance.textContent = `${account.balance} EUR`;
 };
-calBalance(account1.movements);
+
+const updateUI = function (acc) {
+  // Display balance
+  calBalance(acc);
+  // Display movements
+  displayMovements(acc.movements);
+  // Display Summary
+  displaySummary(acc);
+};
 
 // convert euro to USD
 const displayEuroToUSD = movements
@@ -166,13 +174,52 @@ btnLogin.addEventListener("click", function (e) {
       currentAccount.owner.split(" ")[0]
     }`;
     containerApp.style.opacity = 100;
-    // Display balance
-    calBalance(currentAccount.movements);
-    // Display movements
-    displayMovements(currentAccount.movements);
-    // Display Summary
-    displaySummary(currentAccount);
+    inputLoginUsername.value = inputLoginPin.value = "";
+    inputLoginPin.blur();
+    updateUI(currentAccount);
   }
+});
+
+// Transfer money
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const reciever = accounts.find(
+    (acc) => acc.userName === inputTransferTo.value
+  );
+  console.log(amount, reciever);
+  inputTransferTo.value = inputTransferAmount.value = "";
+  if (
+    amount > 0 &&
+    amount <= currentAccount.balance &&
+    reciever?.userName !== currentAccount.userName
+  ) {
+    // Doing the transfer
+    console.log(currentAccount.balance);
+    currentAccount.movements.push(-amount);
+    reciever.movements.push(amount);
+    updateUI(currentAccount);
+  }
+});
+
+// Close the account
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+  if (
+    inputCloseUsername.value === currentAccount.userName &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    // debugger;
+    console.log("perfect");
+    const index = accounts.findIndex(
+      (acc) => acc.userName === currentAccount.userName
+    );
+    console.log(index);
+    accounts.splice(index, 1);
+    containerApp.style.opacity = 0;
+    console.log(accounts);
+  }
+  // inputCloseUsername.value = inputClosePin.value = "";
 });
 
 // mini coding challenges
