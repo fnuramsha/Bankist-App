@@ -8,6 +8,7 @@
 const account1 = {
   owner: "Jonas Schmedtmann",
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  // movements: [1, 2, 3, 4],
   interestRate: 1.2, // %
   pin: 1111,
 };
@@ -75,10 +76,11 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 const euroToUSD = 1.1;
 
 /////////////////////////////////////////////////
-
-const displayMovements = function (movements) {
+let sorted = false;
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = "";
-  movements.forEach(function (mov, i) {
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? "deposit" : "withdrawal";
     const html = `<div class="movements__row">
   <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
@@ -88,6 +90,17 @@ const displayMovements = function (movements) {
   });
 };
 //displayMovements(account1.movements);
+
+btnSort.addEventListener("click", function (e) {
+  e.preventDefault();
+  if (sorted === false) {
+    displayMovements(currentAccount.movements, true);
+    sorted = true;
+  } else {
+    displayMovements(currentAccount.movements, false);
+    sorted = false;
+  }
+});
 
 // Calculate and display deposit
 const displaySummary = function (acc) {
@@ -134,7 +147,6 @@ console.log(accounts);
 // Calculate balance
 
 const calBalance = function (account) {
-  // debugger;
   account.balance = account.movements.reduce((acc, mov) => acc + mov, 0);
 
   labelBalance.textContent = `${account.balance} EUR`;
@@ -209,7 +221,6 @@ btnClose.addEventListener("click", function (e) {
     inputCloseUsername.value === currentAccount.userName &&
     Number(inputClosePin.value) === currentAccount.pin
   ) {
-    // debugger;
     console.log("perfect");
     const index = accounts.findIndex(
       (acc) => acc.userName === currentAccount.userName
@@ -219,10 +230,52 @@ btnClose.addEventListener("click", function (e) {
     containerApp.style.opacity = 0;
     console.log(accounts);
   }
-  // inputCloseUsername.value = inputClosePin.value = "";
+  inputCloseUsername.value = inputClosePin.value = "";
 });
 
+// Request loan
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= 0.1 * amount)
+  ) {
+    currentAccount.movements.push(amount);
+    updateUI(currentAccount);
+  }
+});
+
+// flat and flatMap
+const overalBalance = accounts
+  .map((acc) => acc.movements)
+  .flat()
+  .reduce((acc, mov) => acc + mov, 0);
+
+console.log(overalBalance);
+
+const overalBalance2 = accounts
+  .flatMap((acc) => acc.movements)
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overalBalance2);
+
+// sorting
+const ascending = movements.sort((a, b) => a - b);
+console.log(ascending);
+
+const descending = movements.sort((a, b) => b - a);
+console.log(descending);
+
 // mini coding challenges
+
+labelBalance.addEventListener("click", function () {
+  const movementsUI = Array.from(
+    document.querySelectorAll(".movements__value"),
+    (el) => parseInt(el.textContent)
+  );
+  // console.log(movementsUI.map((el) => Number(el.textContent)));
+  console.log(movementsUI);
+});
 
 // --------Filter method
 
@@ -269,3 +322,69 @@ btnClose.addEventListener("click", function (e) {
 // };
 // const result = newFunc(accounts);
 // console.log(result);
+
+// Array methods
+
+const depositSum = accounts
+  .flatMap((acc) => acc.movements)
+
+  .filter((mov) => mov > 0)
+  .reduce((acc, dep) => acc + dep, 0);
+
+console.log(depositSum);
+
+//I want to count how many deposits in the bank with atleast 1000 euros.
+let i = 0;
+const numDeposit = accounts
+  .flatMap((acc) => acc.movements)
+  .forEach((mov) => {
+    if (mov >= 1000) {
+      i++;
+    }
+  });
+console.log(i);
+
+//  create new object which contains sums of the deposits and of the withdrawals, we need to calculate these sums all
+// in the same time, all in one go using reduce
+
+const newObject = accounts
+  .flatMap((acc) => acc.movements)
+  .reduce(
+    (acc, mov) => {
+      mov > 0 ? (acc.deposits = acc.deposits + mov) : (acc.withdrawal += mov);
+      return acc;
+    },
+    { deposits: 0, withdrawal: 0 }
+  );
+console.log(newObject);
+
+// create new array
+const newArray = accounts
+  .flatMap((acc) => acc.movements)
+  .reduce(
+    (acc, mov) => {
+      mov > 0
+        ? (acc.arrayDeposits = acc.arrayDeposits + mov)
+        : (acc.arrayWithdrawal += mov);
+      return acc;
+    },
+    [arrayDeposits == 0, arrayWithdrawal == 0]
+  );
+console.log(newArray);
+
+// create a function that converts the string to title case
+const convertString = function (string) {
+  const exceptions = ["a", "an", "in", "or", "at", "the", "are"];
+  const words = string
+    .toLowerCase()
+    .split(" ")
+    .map((word) =>
+      exceptions.includes(word) ? word : word[0].toUpperCase() + word.slice(1)
+    )
+    .join(" ");
+
+  return words;
+};
+
+console.log(convertString("this is a nice work"));
+console.log(convertString("you Are my FRIEND"));
