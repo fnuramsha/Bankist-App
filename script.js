@@ -240,9 +240,12 @@ btnLoan.addEventListener("click", function (e) {
     amount > 0 &&
     currentAccount.movements.some((mov) => mov >= 0.1 * amount)
   ) {
-    currentAccount.movements.push(amount);
-    updateUI(currentAccount);
+    setTimeout(function () {
+      currentAccount.movements.push(amount);
+      updateUI(currentAccount);
+    }, 3000);
   }
+  inputLoanAmount.value = "";
 });
 
 // flat and flatMap
